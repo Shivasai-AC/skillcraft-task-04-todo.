@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1020">
+  <title>To-Do App | SkillCraft Technology</title>
+  <style>
+    :root {
+      --bg: #0b1020; --panel: #141b30; --panel2: #10172a;
+      --line: #2a3554; --text: #f4f6ff; --muted: #9ca9c9;
+      --purple: #8b5cf6; --blue: #3b82f6; --green: #10b981;
+      --red: #fb7185; --amber: #fbbf24;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh; padding: 22px; display: grid; place-items: center;
+      background: radial-gradient(ellipse at top, #20264a 0%, var(--bg) 58%);
+      color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #c4b5fd; outline-offset: 2px;
+    }
+    .app { width: 100%; max-width: 850px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px;
+      background: linear-gradient(135deg, var(--blue), var(--purple)); font-size: 25px;
+      box-shadow: 0 8px 28px #6941c655;
+    }
+    h1 { font-size: clamp(21px, 4vw, 28px); letter-spacing: -.6px; }
+    .brand p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .tag { color: #d7ccff; border: 1px solid #59468c; background: #211a3b; padding: 8px 12px; border-radius: 999px; font-size: 12px; white-space: nowrap; }
+    .panel {
+      border: 1px solid var(--line); border-radius: 23px; padding: clamp(18px, 4vw, 30px);
+      background: linear-gradient(145deg, #171e35f5, #101628f7); box-shadow: 0 24px 80px #0006;
+    }
+    .intro { margin-bottom: 22px; }
+    .eyebrow { color: #b6a5ff; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.7px; margin-bottom: 8px; }
+    .intro h2 { font-size: clamp(24px, 5vw, 34px); letter-spacing: -1px; }
+    .intro p { color: var(--muted); line-height: 1.6; margin-top: 8px; }
+    .task-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+    input, select {
+      width: 100%; min-width: 0; color: var(--text); background: #0c1326;
+      border: 1px solid #303b5c; border-radius: 12px; padding: 13px 14px;
+    }
+    input::placeholder { color: #7886a8; }
+    .primary {
+      border: 0; border-radius: 12px; padding: 12px 18px; color: white; font-weight: 750;
+      background: linear-gradient(100deg, #6d5dfc, #8b5cf6); box-shadow: 0 8px 22px #6d5dfc30;
+    }
+    .primary:hover { filter: brightness(1.1); }
+    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .field-label { display: block; color: var(--muted); font-size: 12px; margin: 0 0 6px 2px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 26px 0 14px; }
+    .toolbar h3 { font-size: 19px; }
+    .count { color: var(--muted); font-size: 13px; }
+    .filters { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 15px; }
+    .filter {
+      border: 1px solid #303958; color: var(--muted); background: #11182c;
+      border-radius: 999px; padding: 8px 13px; font-size: 13px; white-space: nowrap;
+    }
+    .filter.active { background: #33265c; color: #e6deff; border-color: #8266df; }
+    .task-list { display: grid; gap: 10px; }
+    .task {
+      display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 12px;
+      padding: 15px; border: 1px solid #2b3553; border-radius: 15px; background: #0f1629;
+    }
+    .check {
+      width: 22px; height: 22px; margin-top: 2px; accent-color: var(--green); cursor: pointer;
+    }
+    .task-title { font-weight: 700; overflow-wrap: anywhere; line-height: 1.4; }
+    .task.completed .task-title { color: #7886a4; text-decoration: line-through; }
+    .task-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+    .chip { color: #b9c5e3; background: #202943; padding: 4px 8px; border-radius: 7px; font-size: 11px; }
+    .chip.overdue { color: #fecdd3; background: #4a2032; }
+    .task-actions { display: flex; gap: 6px; }
+    .icon-btn {
+      display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px;
+      border: 1px solid #303958; color: #c3cce4; background: #1a223a;
+    }
+    .icon-btn.delete { color: #fda4af; }
+    .empty { text-align: center; padding: 35px 15px; border: 1px dashed #36415f; border-radius: 15px; color: var(--muted); }
+    .empty .emoji { font-size: 34px; margin-bottom: 10px; }
+    .empty strong { display: block; color: #e3e8fa; margin-bottom: 5px; }
+    .bottom-actions { display: flex; justify-content: flex-end; margin-top: 15px; }
+    .clear-btn { color: #fda4af; border: 1px solid #593044; background: transparent; border-radius: 10px; padding: 9px 12px; font-size: 12px; }
+    footer { color: #858eaf; text-align: center; font-size: 12px; margin-top: 20px; }
+    .toast { min-height: 20px; color: #a7f3d0; font-size: 13px; margin-top: 12px; }
+    @media (max-width: 540px) {
+      body { padding: 12px; align-items: start; }
+      .topbar { margin-top: 8px; }
+      .brand-icon { width: 42px; height: 42px; }
+      .tag { font-size: 10px; padding: 7px 9px; }
+      .panel { border-radius: 19px; }
+      .task-form { grid-template-columns: 1fr; }
+      .task-form .primary { width: 100%; }
+      .details { grid-template-columns: 1fr; }
+      .task { gap: 9px; padding: 12px; }
+      .task-actions { flex-direction: column; }
+      .toolbar h3 { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">✓</div>
+        <div><h1>Task<span style="color:#b6a5ff">Flow</span></h1><p>Plan your day, one task at a time.</p></div>
+      </div>
+      <div class="tag">SKILLCRAFT · TASK 04</div>
+    </header>
+
+    <section class="panel">
+      <div class="intro">
+        <div class="eyebrow">Your personal task board</div>
+        <h2>Make today count.</h2>
+        <p>Add tasks, set a deadline, and check them off as you go. Your tasks stay saved on this device.</p>
+      </div>
+
+      <form id="taskForm">
+        <div class="task-form">
+          <input id="taskInput" type="text" maxlength="180" placeholder="What do you need to get done?" aria-label="Task name" required>
+          <button class="primary" id="submitBtn" type="submit">＋ Add task</button>
+        </div>
+        <div class="details">
+          <div>
+            <label class="field-label" for="dueInput">Due date &amp; time (optional)</label>
+            <input id="dueInput" type="datetime-local">
+          </div>
+          <div>
+            <label class="field-label" for="priorityInput">Priority</label>
+            <select id="priorityInput">
+              <option value="Normal">Normal priority</option>
+              <option value="High">High priority</option>
+              <option value="Low">Low priority</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <div class="toast" id="toast" aria-live="polite"></div>
+
+      <div class="toolbar">
+        <h3>Your tasks</h3>
+        <span class="count" id="taskCount">0 tasks</span>
+      </div>
+
+      <div class="filters" role="group" aria-label="Filter tasks">
+        <button class="filter active" data-filter="All">All tasks</button>
+        <button class="filter" data-filter="Active">Active</button>
+        <button class="filter" data-filter="Completed">Completed</button>
+      </div>
+
+      <div class="task-list" id="taskList"></div>
+      <div class="bottom-actions">
+        <button class="clear-btn" id="clearCompletedBtn" type="button">Clear completed</button>
+      </div>
+    </section>
+
+    <footer>Built with HTML, CSS &amp; JavaScript · SkillCraft Technology</footer>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "skillcraft-task04-tasks-v1";
+    const taskForm = document.getElementById("taskForm");
+    const taskInput = document.getElementById("taskInput");
+    const dueInput = document.getElementById("dueInput");
+    const priorityInput = document.getElementById("priorityInput");
+    const submitBtn = document.getElementById("submitBtn");
+    const taskList = document.getElementById("taskList");
+    const taskCount = document.getElementById("taskCount");
+    const toast = document.getElementById("toast");
+    const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+
+    let tasks = loadTasks();
+    let filter = "All";
+    let editingId = null;
+    let toastTimer;
+
+    function loadTasks() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(saved) ? saved.filter(t => t && typeof t.id === "string" && typeof t.title === "string") : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveTasks() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch (error) {
+        showToast("Could not save on this device. Your browser storage may be disabled.");
+      }
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.textContent = ""; }, 3500);
+    }
+
+    function escapeText(value) {
+      return String(value);
+    }
+
+    function formatDue(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleString([], {
+        month: "short", day: "numeric", year: "numeric",
+        hour: "numeric", minute: "2-digit"
+      });
+    }
+
+    function isOverdue(task) {
+      return Boolean(task.due && !task.completed && new Date(task.due).getTime() < Date.now());
+    }
+
+    function renderTasks() {
+      taskList.replaceChildren();
+      const activeCount = tasks.filter(t => !t.completed).length;
+      const completedCount = tasks.length - activeCount;
+      taskCount.textContent = `${activeCount} active · ${completedCount} completed`;
+
+      const visible = tasks.filter(task => {
+        if (filter === "Active") return !task.completed;
+        if (filter === "Completed") return task.completed;
+        return true;
+      }).sort((a, b) => {
+        if (a.completed !== b.completed) return Number(a.completed) - Number(b.completed);
+        if (a.due && b.due) return new Date(a.due) - new Date(b.due);
+        if (a.due) return -1;
+        if (b.due) return 1;
+        return b.createdAt - a.createdAt;
+      });
+
+      document.querySelectorAll(".filter").forEach(button => {
+        const selected = button.dataset.filter === filter;
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-pressed", String(selected));
+      });
+
+      if (!visible.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        const emoji = document.createElement("div");
+        emoji.className = "emoji";
+        emoji.textContent = filter === "Completed" ? "🎉" : "📝";
+        const title = document.createElement("strong");
+        title.textContent = filter === "Completed" ? "No completed tasks yet" : filter === "Active" ? "You're all caught up!" : "Your list is clear";
+        const description = document.createElement("span");
+        description.textContent = filter === "Completed" ? "Finished tasks will show up here." : "Add a task above to get started.";
+        empty.append(emoji, title, description);
+        taskList.appendChild(empty);
+        clearCompletedBtn.hidden = completedCount === 0;
+        return;
+      }
+
+      visible.forEach(task => {
+        const article = document.createElement("article");
+        article.className = "task" + (task.completed ? " completed" : "");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "check";
+        checkbox.checked = Boolean(task.completed);
+        checkbox.setAttribute("aria-label", `Mark ${task.title} as ${task.completed ? "active" : "completed"}`);
+        checkbox.addEventListener("change", () => toggleTask(task.id));
+
+        const content = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "task-title";
+        title.textContent = task.title;
+        content.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "task-meta";
+        const priority = document.createElement("span");
+        priority.className = "chip";
+        priority.textContent = `${task.priority || "Normal"} priority`;
+        meta.appendChild(priority);
+
+        if (task.due) {
+          const due = document.createElement("span");
+          due.className = "chip" + (isOverdue(task) ? " overdue" : "");
+          due.textContent = (isOverdue(task) ? "Overdue · " : "Due · ") + formatDue(task.due);
+          meta.appendChild(due);
+        }
+        content.appendChild(meta);
+
+        const actions = document.createElement("div");
+        actions.className = "task-actions";
+
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "icon-btn";
+        edit.textContent = "✎";
+        edit.setAttribute("aria-label", `Edit ${task.title}`);
+        edit.title = "Edit task";
+        edit.addEventListener("click", () => beginEdit(task.id));
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "icon-btn delete";
+        remove.textContent = "×";
+        remove.setAttribute("aria-label", `Delete ${task.title}`);
+        remove.title = "Delete task";
+        remove.addEventListener("click", () => deleteTask(task.id));
+
+        actions.append(edit, remove);
+        article.append(checkbox, content, actions);
+        taskList.appendChild(article);
+      });
+
+      clearCompletedBtn.hidden = completedCount === 0;
+    }
+
+    function resetForm() {
+      taskForm.reset();
+      editingId = null;
+      submitBtn.textContent = "＋ Add task";
+      taskInput.placeholder = "What do you need to get done?";
+    }
+
+    taskForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const title = taskInput.value.trim();
+      if (!title) {
+        showToast("Please enter a task name.");
+        taskInput.focus();
+        return;
+      }
+
+      if (editingId) {
+        const task = tasks.find(t => t.id === editingId);
+        if (task) {
+          task.title = title;
+          task.due = dueInput.value;
+          task.priority = priorityInput.value;
+          showToast("Task updated.");
+        }
+      } else {
+        tasks.push({
+          id: (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+          title,
+          due: dueInput.value,
+          priority: priorityInput.value,
+          completed: false,
+          createdAt: Date.now()
+        });
+        showToast("Task added successfully.");
+      }
+
+      saveTasks();
+      resetForm();
+      renderTasks();
+      taskInput.focus();
+    });
+
+    function toggleTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      task.completed = !task.completed;
+      saveTasks();
+      renderTasks();
+      showToast(task.completed ? "Task completed! Nice work." : "Task marked active.");
+    }
+
+    function beginEdit(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      editingId = id;
+      taskInput.value = task.title;
+      dueInput.value = task.due || "";
+      priorityInput.value = task.priority || "Normal";
+      submitBtn.textContent = "Save changes";
+      taskInput.placeholder = "Edit your task";
+      taskInput.focus();
+      document.querySelector(".intro").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function deleteTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      if (!confirm(`Delete "${task.title}"?`)) return;
+      tasks = tasks.filter(t => t.id !== id);
+      if (editingId === id) resetForm();
+      saveTasks();
+      renderTasks();
+      showToast("Task deleted.");
+    }
+
+    document.querySelectorAll(".filter").forEach(button => {
+      button.addEventListener("click", () => {
+        filter = button.dataset.filter;
+        renderTasks();
+      });
+    });
+
+    clearCompletedBtn.addEventListener("click", () => {
+      const completed = tasks.filter(t => t.completed).length;
+      if (!completed) return;
+      if (!confirm(`Clear ${completed} completed task${completed === 1 ? "" : "s"}?`)) return;
+      tasks = tasks.filter(t => !t.completed);
+      saveTasks();
+      renderTasks();
+      showToast("Completed tasks cleared.");
+    });
+
+    renderTasks();
+  </script>
+</body>
+</html>
